@@ -12,7 +12,7 @@ const categorySchema = new mongoose.Schema({
     unique: true,
   },
   createdAt: {
-    type: Date,
+    type: Date, 
     default: Date.now,
   },
 })
