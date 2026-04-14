@@ -43,7 +43,7 @@ async function createCategory(req,res,next) {
 async function getCategory(req,res,next) {
     try{
 
-        const categories = await categoryModel.find().sort({ createdAt: -1 })
+        const categories = await categoryModel.find().sort({ createdAt: 1 })
 
         res.json({
             success:true,
