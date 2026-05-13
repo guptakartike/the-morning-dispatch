@@ -22,34 +22,9 @@ const articleSchema = new mongoose.Schema({
   },
 
   category: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Category",
+    type: String,
   },
 
-  author: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-  },
-
-  isPublished: {
-    type: Boolean,
-    default: true,
-  },
-
-  isFeatured: {
-    type: Boolean,
-    default: false,
-  },
-
-  isBreaking: {
-    type: Boolean,
-    default: false,
-  },
-
-  views: {
-    type: Number,
-    default: 0,
-  },
 
   createdAt: {
     type: Date,
