@@ -1,3 +1,0 @@
-/**
- * config.js — Global constants
- */
