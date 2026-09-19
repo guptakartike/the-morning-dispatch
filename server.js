@@ -4,20 +4,25 @@ const { fetchAllSources } = require("./src/services/news.service");
 const { startScheduler } = require("./src/jobs/scheduler");
 require("dotenv").config()
 
-const startServer = async () => {
-  try {
-    await connectDB();
+async function startServer() {
+    try {
+        await connectDB();
 
-    await fetchAllSources();
+        const PORT = process.env.PORT || 2005;
 
-    app.listen(process.env.PORT, () => {
-      console.log("TMD Server running");
-      startScheduler();
-    });
-  } catch (error) {
-    console.error(error);
-    process.exit(1);
-  }
-};
+        app.listen(PORT, "0.0.0.0", () => {
+            console.log(`TMD Server running on port ${PORT}`);
+        });
+
+        startScheduler();
+
+        await fetchAllSources();
+    } catch (error) {
+        console.error("Server startup failed:", error);
+        process.exit(1);
+    }
+}
+
+
 
 startServer();

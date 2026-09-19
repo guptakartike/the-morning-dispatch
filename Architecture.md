@@ -227,5 +227,35 @@ NEWS_API_KEY=your_key_here
 npm install axios node-cron
 ```
 
-Existing deps kept: `express`, `mongoose`, `dotenv`.
+Existing deps kept: `express`, `mongoose`, `dotenv`, `axios`, `node-cron`, `cors`.
 Removed: `multer`, `bcrypt`, `jsonwebtoken` (already stripped).
+
+---
+
+## Frontend Architecture & Editorial Design System
+
+### 1. Stack & Principles
+- **Pure Vanilla JavaScript**: ES modules, native DOM manipulation, and modern browser APIs. Zero runtime framework overhead (React removed).
+- **Vite Dev Server & Proxy**: Runs on port `5173`, proxying `/api` requests to `http://localhost:2005` to prevent CORS issues without altering backend server code.
+- **Client-Side Routing**: Custom lightweight router in `src/router.js` handling `pushState`, `popstate`, and path parameter extraction (`/`, `/article/:id`, `/search`).
+
+### 2. Editorial Design Language
+- **Colors**:
+  - Warm Ivory (`#F7F4EE`): Primary substrate reducing eye strain, simulating newsprint.
+  - Ink Black (`#171717`): High-contrast typographic voice.
+  - Deep Burgundy (`#8B1E2D`): Intellectual accent for active filters and lead category pills.
+  - Soft Border (`#D9D5CC`): 1px structural hairline rules dividing cards and columns.
+- **Typography**:
+  - `Playfair Display`: Broadsheet masthead, hero headlines, and editorial section titles.
+  - `Inter`: Utility text, timestamps, source badges, and excerpt abstracts.
+- **Geometry**: Razor-sharp right angles (`0px` border-radius) evoking printed newspaper sheets.
+
+### 3. Component Hierarchy
+- `masthead.js`: Broadsheet header, edition badge, bureau status, and search link.
+- `heroStory.js`: Primary lead story with 16:10 editorial image and fallback placeholder.
+- `ticker.js`: "Briefings & Critical Wires" live ticker column.
+- `filters.js`: Newsroom source chips and topic filter pills with responsive horizontal scroll.
+- `articleCard.js`: Modular broadsheet cards with publisher attribution.
+- `pagination.js`: Backend-driven pagination bar.
+- `mobileNav.js`: Fixed bottom bar on mobile viewports (<768px).
+- `stateViews.js`: Broadsheet empty and error state notifications.

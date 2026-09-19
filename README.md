@@ -1,215 +1,174 @@
-# The Morning Dispatch
+# The Morning Dispatch (TMD)
 
-A backend-powered news aggregation platform that collects, normalizes, and stores news articles from external news providers.
-
-## Overview
-
-The Morning Dispatch is designed as a news aggregation system rather than a traditional CMS. Instead of manually creating articles, the backend fetches news from external sources, normalizes the data into a consistent format, and stores it in MongoDB for fast retrieval.
-
-Current implementation uses NewsAPI as the news provider and supports article ingestion from BBC News.
-
-## Features
-
-- NewsAPI integration
-- Automated article normalization
-- MongoDB persistence
-- Duplicate article prevention
-- Source-based ingestion architecture
-- REST API backend with Express
-- Scalable service-layer architecture
-
-## Tech Stack
-
-### Backend
-
-- Node.js
-- Express.js
-- MongoDB
-- Mongoose
-- Axios
-- Dotenv
-
-### External Services
-
-- NewsAPI.org
+> **"Your morning, across every newsroom."**
+> An editorial news aggregation platform and broadsheet wire service curating global perspectives from accredited newsrooms (BBC News, CNN, Reuters, Fox News).
 
 ---
 
-## Project Structure
+## 1. Overview
 
-```text
-src/
-├── db/
-│   └── db.js
-│
-├── models/
-│   └── article.model.js
-│
-├── routes/
-│   └── article.routes.js
-│
-├── services/
-│   └── news.service.js
-│
-├── middlewares/
-│   └── error.middleware.js
-│
-└── app.js
+The Morning Dispatch is built with a clear separation of concerns:
+1. **Backend Wire Engine**: A read-only REST API powered by Express, MongoDB, and NewsAPI that continuously ingests, normalizes, deduplicates, and indexes articles across accredited global news sources.
+2. **Editorial Broadsheet Frontend**: A high-performance, lightweight **Vanilla JavaScript** application strictly adhering to the broadsheet newspaper aesthetic defined in `DESIGN.md`. Corner geometry is razor-sharp (`0px` border-radius), typography pairs high-contrast `Playfair Display` serif headlines with utilitarian `Inter` metadata, and color uses an authentic Warm Ivory newsprint palette (`#F7F4EE`) with Deep Burgundy (`#8B1E2D`) editorial accents.
 
-server.js
+---
+
+## 2. Architecture & Data Flow
+
+```
+┌─────────────────┐       ┌──────────────────────────────────────┐       ┌──────────────────┐
+│   NewsAPI.org   │ ───>  │       TMD Ingestion Pipeline         │ ───>  │  MongoDB Index   │
+│  (Wire Feeds)   │       │ (Normalize + Hash Deduplication)     │       │ (morning-dispatch)
+└─────────────────┘       └──────────────────────────────────────┘       └──────────────────┘
+                                             │                                     │
+                                    (Every 30 Mins Cron)                           │
+                                             │                                     │
+                                             ▼                                     ▼
+                                ┌──────────────────────────┐             ┌──────────────────┐
+                                │    node-cron Scheduler   │             │ Express REST API │
+                                └──────────────────────────┘             │  GET /api/article│
+                                                                         └──────────────────┘
+                                                                                   │
+                                                                           (Vite Dev Proxy)
+                                                                                   │
+                                                                                   ▼
+                                                                         ┌──────────────────┐
+                                                                         │ Vanilla JS Client│
+                                                                         │   (Native DOM)   │
+                                                                         └──────────────────┘
 ```
 
 ---
 
-## Article Schema
+## 3. Backend Wire Engine
 
-Each article is stored as normalized metadata:
+### Features
+- **Centralized Source Registry**: Structured registry configuring BBC News, CNN, Reuters, and Fox News.
+- **Idempotent Ingestion & Deduplication**: Calculates an MD5 hash of `title + publishedAt + sourceSlug` as `sourceArticleId` and uses MongoDB `updateOne` with `$set` to prevent duplicates.
+- **Automated Scheduler**: Ingests fresh dispatches across all accredited newsrooms every 30 minutes via `node-cron`.
+- **Query Validation & Pagination**: Robust parameter validation for `page` (positive integers), `limit` (max 100), `sort` (`newest` or `oldest`), `source`, `topic`, and `from`/`to` ISO dates.
 
-```javascript
+### Endpoints
+
+#### `GET /api/article`
+Retrieves a paginated list of normalized news dispatches.
+
+**Query Parameters:**
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `page` | Integer | No | Page number (default: 1) |
+| `limit` | Integer | No | Articles per page (default: 10, max: 100) |
+| `source` | String | No | Newsroom source slug (e.g. `bbc-news`, `cnn`, `reuters`, `fox-news`) |
+| `topic` | String | No | Topic filter (e.g. `world`, `business`, `technology`, `science`) |
+| `sort` | String | No | Sort order: `newest` (default) or `oldest` |
+| `from` | String | No | Start date (`YYYY-MM-DD` or ISO timestamp) |
+| `to` | String | No | End date (`YYYY-MM-DD` or ISO timestamp) |
+
+**Example Response:**
+```json
 {
-  title,
-  description,
-  url,
-  imageUrl,
-  source,
-  sourceSlug,
-  topic,
-  publishedAt,
-  fetchedAt,
-  sourceArticleId
+  "articles": [
+    {
+      "_id": "6aae6b3081723d5ece71ebc7",
+      "sourceArticleId": "edf92fb2658d89a76ba370431a829017",
+      "title": "MI5 accepts it gave evidence based on lies in neo-Nazi spy case",
+      "description": "It is the first time MI5 has confirmed the BBC's revelation...",
+      "url": "https://www.bbc.co.uk/news/articles/c3j4jz07e2v8o",
+      "imageUrl": "https://ichef.bbci.co.uk/...",
+      "source": "BBC News",
+      "sourceSlug": "bbc-news",
+      "topic": "general",
+      "publishedAt": "2026-09-18T10:52:25.275Z",
+      "fetchedAt": "2026-09-19T11:00:00.737Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 48,
+    "pages": 5
+  }
 }
 ```
 
-### Important Fields
+---
 
-#### sourceArticleId
+## 4. Editorial Frontend (Vanilla JavaScript)
 
-A unique hash generated from:
+### Design System Highlights
+- **Palette**:
+  - `Warm Ivory (#F7F4EE)`: Authentic paper base minimizing optical fatigue.
+  - `Ink Black (#171717)`: High-contrast broadsheet editorial typography.
+  - `Deep Burgundy (#8B1E2D)`: Editorial accent for active filters and lead categories.
+  - `Secondary Slate (#6B6B6B)`: Utility timestamps and reading metadata.
+  - `Soft Border (#D9D5CC)`: 1px structural baseline dividing columns and cards.
+  - `Muted Gray (#ECE9E2)`: Skeleton loading surfaces.
+- **Typography**:
+  - `Playfair Display`: Masthead, editorial headlines, and display callouts.
+  - `Inter`: Metadata, source chips, buttons, abstracts, and utility text.
+- **Geometry**: Strictly razor-sharp `0px` border-radius (`rounded-none`). No simulated drop shadows, glassmorphism, or floating SaaS cards.
+- **Lightweight**: Zero framework runtime overhead (production bundle is ~14 kB gzipped).
 
-```text
-title + publishedAt + sourceSlug
-```
-
-Used to prevent duplicate articles from being inserted into the database.
-
-#### publishedAt
-
-Original publication timestamp from the news provider.
-
-#### fetchedAt
-
-Timestamp indicating when the article was ingested into The Morning Dispatch.
+### Frontend Routing
+The client uses a native client-side router based on `history.pushState` and `window.onpopstate`:
+- `/`: Broadsheet front page (lead story, briefings ticker, newsroom filters, article grid, pagination).
+- `/article/:id`: Perspective detail view (metadata, drop cap excerpt, pullquote, publisher attribution card, external link).
+- `/search`: Archival search edition with real-time newsroom breakdown counts and dispatches list.
 
 ---
 
-## Installation
+## 5. Getting Started
 
-### Clone Repository
+### Prerequisites
+- Node.js (v18+)
+- MongoDB running locally on `mongodb://127.0.0.1:27017`
 
-```bash
-git clone <repository-url>
-cd the-morning-dispatch
-```
+### 1. Environment Configuration
 
-### Install Dependencies
-
-```bash
-npm install
-```
-
-### Create Environment Variables
-
-Create a `.env` file:
-
+In repository root (`.env`):
 ```env
-PORT=5000
-
-MONGO_URI=your_mongodb_connection_string
-
-NEWS_API_KEY=your_newsapi_key
+PORT=2005
+MONGO_URI=mongodb://127.0.0.1:27017/morning-dispatch
+NODE_ENV=development
+NEWS_API_KEY=your_newsapi_org_key
 ```
 
----
+In `frontend/.env`:
+```env
+VITE_API_BASE_URL=/api
+```
 
-## Running the Project
+### 2. Run the Backend Wire Service
 
-Development Mode
-
+From the root directory:
 ```bash
+# Install backend dependencies
+npm install
+
+# Start backend server
+node server.js
+```
+The server will connect to MongoDB, perform an initial multi-source ingestion, start the cron scheduler, and listen on port `2005`.
+
+### 3. Run the Frontend Development Server
+
+In a separate terminal:
+```bash
+cd frontend
+npm install
 npm run dev
 ```
+Open [http://localhost:5173](http://localhost:5173) in your browser.
 
-Production Mode
+### 4. Build Frontend for Production
 
 ```bash
-npm start
+cd frontend
+npm run build
 ```
+Builds the optimized production assets into `frontend/dist/`.
 
 ---
 
-## Current Workflow
-
-```text
-NewsAPI
-   ↓
-Fetch Articles
-   ↓
-Normalize Data
-   ↓
-Generate Unique IDs
-   ↓
-Store in MongoDB
-   ↓
-Serve via API
-```
-
----
-
-## Duplicate Prevention
-
-The system prevents duplicate articles using a unique `sourceArticleId`.
-
-When an article already exists:
-
-```text
-Insert skipped
-Application continues running
-```
-
-This ensures the ingestion process can run repeatedly without polluting the database.
-
----
-
-## Current Status
-
-Implemented:
-
-- MongoDB integration
-- Article schema redesign
-- NewsAPI integration
-- BBC News ingestion
-- Data normalization
-- Duplicate prevention
-- Service-layer architecture
-
-Planned:
-
-- Multi-source ingestion
-  - BBC News
-  - CNN
-  - Reuters
-  - Fox News
-
-- Scheduled ingestion using cron jobs
-
-- Topic-based news feeds
-
-- Perspective comparison using LLMs
-
-- Cached AI-generated summaries
-
----
-
-## License
-
+## 6. License
 MIT License
