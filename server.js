@@ -1,13 +1,13 @@
 const app = require("./src/app")
 const connectDB = require("./src/db/db")
-const { fetchNewsBySource } = require("./src/services/news.service");
+const { fetchAllSources } = require("./src/services/news.service");
 require("dotenv").config()
 
 const startServer = async () => {
   try {
     await connectDB();
 
-    await fetchNewsBySource("bbc-news");
+    await fetchAllSources();
 
     app.listen(process.env.PORT, () => {
       console.log("TMD Server running");
