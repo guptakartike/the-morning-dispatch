@@ -170,5 +170,5 @@ Builds the optimized production assets into `frontend/dist/`.
 
 ---
 
-## 6. License
-MIT License
+## Summary
+The Morning Dispatch is a deployed multi-source news aggregation platform. It pulls article metadata from BBC, CNN, Reuters and Fox News through NewsAPI, normalizes the responses into a common schema, generates a deterministic article ID, and uses MongoDB upserts to make ingestion idempotent and prevent duplicates. A node-cron scheduler automatically refreshes the database every 30 minutes, with concurrent source fetching and failure isolation between sources. The data is exposed through an Express REST API supporting pagination, source/topic/date filtering and sorting, with MongoDB indexes for the main query patterns. The frontend is a Vanilla JS/Vite application deployed on Vercel, the backend runs on Render, and MongoDB Atlas provides persistent storage. It’s currently a deployed MVP rather than a high-scale production system; caching, rate limiting, intelligent categorization, search and LLM-based cross-source analysis are future extensions.
