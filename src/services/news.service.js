@@ -2,26 +2,31 @@ require('dotenv').config()
 const axios = require('axios')
 const crypto = require('crypto')
 const Article = require('../models/article.model')
-
+const { getSource } = require('../config/sources')
 
 const fetchNewsBySource = async (sourceSlug) => {
-    console.log(`Fetching ${sourceSlug} news...`);
+    const sourceConfig = getSource(sourceSlug)
+    if (!sourceConfig) {
+        console.error(`Unsupported source: "${sourceSlug}". Ingestion skipped.`)
+        return
+    }
+
+    console.log(`Fetching ${sourceConfig.sourceSlug} news...`)
     const response = await axios.get(
         'https://newsapi.org/v2/top-headlines',
         {
             params: {
-                sources: sourceSlug,
+                sources: sourceConfig.newsApiId,
                 apiKey: process.env.NEWS_API_KEY
             }
         }
     )
 
-    const articles = response.data.articles;
-    console.log(articles.length);
+    const articles = response.data.articles
+    console.log(articles.length)
 
     const normalisedArticles = articles.map((article) => {
-
-        const uniqueString = article.title + article.publishedAt + sourceSlug
+        const uniqueString = article.title + article.publishedAt + sourceConfig.sourceSlug
 
         const sourceArticleId = crypto.createHash("md5").update(uniqueString).digest("hex")
 
@@ -31,12 +36,11 @@ const fetchNewsBySource = async (sourceSlug) => {
             description: article.description || "",
             url: article.url,
             imageUrl: article.urlToImage,
-            source: article.source.name,
-            sourceSlug: sourceSlug,
+            source: article.source?.name || sourceConfig.name,
+            sourceSlug: sourceConfig.sourceSlug,
             topic: "general",
             publishedAt: article.publishedAt,
             fetchedAt: new Date()
-
         }
     })
 
@@ -46,13 +50,12 @@ const fetchNewsBySource = async (sourceSlug) => {
             {
                 ordered: false,
             }
-        );
+        )
 
-        console.log(`Inserted ${insertedArticles.length} articles`);
+        console.log(`Inserted ${insertedArticles.length} articles`)
     } catch (error) {
-        console.log(error);
+        console.log(error)
     }
-
 }
 
 module.exports = {
