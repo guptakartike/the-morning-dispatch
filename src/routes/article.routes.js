@@ -1,9 +1,13 @@
-const express = require('express');
+const express = require('express')
 
-const router = express.Router();
-const { getArticles } = require('../controllers/article.controller');
+const router = express.Router()
+const { getArticles, getArticleBySlug, getTrendingArticles } = require('../controllers/article.controller')
 
-// Read-only articles route
-router.get('/', getArticles);
+//public routes
+router.get('/',getArticles)
+router.get('/trending',getTrendingArticles)
+router.get('/:slug',getArticleBySlug)
 
-module.exports = router;
+
+
+module.exports = router
