@@ -1,6 +1,7 @@
 const app = require("./src/app")
 const connectDB = require("./src/db/db")
 const { fetchAllSources } = require("./src/services/news.service");
+const { startScheduler } = require("./src/jobs/scheduler");
 require("dotenv").config()
 
 const startServer = async () => {
@@ -11,6 +12,7 @@ const startServer = async () => {
 
     app.listen(process.env.PORT, () => {
       console.log("TMD Server running");
+      startScheduler();
     });
   } catch (error) {
     console.error(error);
