@@ -1,4 +1,4 @@
-# The Morning Dispatch (TMD)
+# The Morning Dispatch  (TMD)
 
 > **"Your morning, across every newsroom."**
 > An editorial news aggregation platform and broadsheet wire service curating global perspectives from accredited newsrooms (BBC News, CNN, Reuters, Fox News).
